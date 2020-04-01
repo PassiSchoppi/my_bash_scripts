@@ -9,11 +9,11 @@ strindex() {
 }
 
 #get name of inet interface
-interface=$(strindex "${OUTPUT}" ":")
-interface=${OUTPUT:0:($interface)}
+x=$(strindex "${OUTPUT}" ":")
+interface=${OUTPUT:0:($x)}
 
 #ask user for confirmation
-read -p "Is this your inet interface: $x (y/n)? " choice
+read -p "Is this your inet interface: $interface (y/n)? " choice
 case "$choice" in
   y|Y ) :;;
   n|N ) exit 1;;
@@ -34,7 +34,25 @@ read nameserver
 
 #prepare netplan file
 netplan="
-# This file describes the network interfaces available on your system\n# For more information, see netplan(5).\nnetwork:\n\tversion: 2\n\trenderer: networkd\n\tethernets:\n\t\t$interface:\n\t\t\taddresses: [$ip/24]\n\t\t\tgateway4: $gateway\n\t\t\tdhcp4: no\n\t\t\tnameservers:\n\t\t\t\taddresses: [$nameserver]\n
+# This file describes the network interfaces available on your system\n# For more information, see netplan(5).\nnetwork:\n  version: 2\n  renderer: networkd\n  ethernets:\n    $interface:\n      addresses: [$ip/24]\n      gateway4: $gateway\n      dhcp4: no\n      nameservers:\n        addresses: [$nameserver]\n
 "
-> ./netplan.net
-echo -e $netplan >> ./netplan.net
+echo -e "\n"
+echo -e "This is your new netplan: \n"
+echo -e "$netplan"
+
+#read out old netplan
+netplanName="$(ls /etc/netplan/)"
+echo "\n$netplanName"
+echo -e "This is your old netplan:\n"
+echo -e "$(cat /etc/netplan/$netplanName)"
+
+#ask use for permission
+read -p "Are you sure you want to change yout netplan (y/n)? " choice
+case "$choice" in
+  y|Y ) :;;
+  n|N ) exit 1;;
+  * ) echo "invalid";;
+esac
+> /etc/netplan/$netplanName
+echo -e "$netplan" > /etc/netplan/$netplanName
+sudo netplan apply /etc/netplan/$netplanName
