@@ -46,7 +46,7 @@ echo "\n$netplanName"
 echo -e "This is your old netplan:\n"
 echo -e "$(cat /etc/netplan/$netplanName)"
 
-#ask use for permission
+#ask user for permission
 read -p "Are you sure you want to change yout netplan (y/n)? " choice
 case "$choice" in
   y|Y ) :;;
